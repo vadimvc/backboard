@@ -1,6 +1,6 @@
 #steps to solving this thing
 
-# 1) chose a location somewhere in x y space
+# 1) chose a location somewhere in x y z space
 
 # 2) pick a location on the board you want to hit
 
