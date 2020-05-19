@@ -9,8 +9,6 @@ import mpl_toolkits.mplot3d.art3d as art3d
 
 g=9.81 #m/s^2
 
-#test
-
 def CalcInitialVelocity(x, z, alpha):
     #x y and z position the ball is being thrown from
     #x is going down the field, y is lateral, and z is height
