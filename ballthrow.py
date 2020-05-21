@@ -8,6 +8,7 @@ import matplotlib.patches as patches
 import mpl_toolkits.mplot3d.art3d as art3d
 
 g=9.81 #m/s^2
+no_of_steps=12
 
 def CalcInitialVelocity(x, z, targetx, targetz, alpha):
     #x y and z position the ball is being thrown from
@@ -54,22 +55,22 @@ def CalculatePath(x,y,z,alpha,targetx,targety,targetz):
     (Velocity_x, Velocity_y_final, Velocity_y_initial)=CalcInitialVelocity(x,z,targetx,targetz,alpha)    
     
     endt=(targetx-x)/Velocity_x
-    t=np.linspace(0, endt, num=50)
+    t=np.linspace(0, endt, num=no_of_steps)
 
     #Equations of motion
 
     Z=z+Velocity_y_initial*t-0.5*g*t**2
-    Y=np.linspace(y,targety,num=50)
+    Y=np.linspace(y,targety,num=no_of_steps)
     X=x+Velocity_x*t
 
     return X,Y,Z
 
 def PlotPath3D(x,y,z,alpha,targetx,targety,targetz):
-    (x,y,z)=CalculatePath(x,y,z,alpha,targetx,targety,targetz)
+    (xpath,ypath,zpath)=CalculatePath(x,y,z,alpha,targetx,targety,targetz)
     fig = plt.figure()
     ax = plt.axes(projection='3d')
-    ax.plot3D(x, y, z, 'red')
-#######TODO MAKE THIS PATCH WORK CORRECTLY
+    ax.plot3D(xpath, ypath, zpath, 'red')
+#TODO MAKE THIS PATCH WORK CORRECTLY
     # rect = patches.Rectangle((0,0),0.1,.18,linewidth=1,edgecolor='blue',facecolor='blue')
     # ax.add_patch(rect)
     # art3d.pathpatch_2d_to_3d(rect, z=0, zdir="z")
@@ -82,17 +83,25 @@ def PlotPath3D(x,y,z,alpha,targetx,targety,targetz):
     plt.show()
 
 def PlotPath2D(x,y,z,alpha,targetx,targety,targetz):
-    (x,y,z)=CalculatePath(x,y,z,alpha,targetx,targety,targetz)
-    fig = plt.figure()
-    plt.plot(x,z,'r')
+    (xpath,ypath,zpath)=CalculatePath(x,y,z,alpha,targetx,targety,targetz)
+    fig = plt.figure(figsize=(8, 9))
+    plt.subplot(211)
+    plt.plot(xpath,zpath,'r')
+    plt.scatter(xpath, zpath, s=337)
     plt.title('Ball Trajectory' )  
     plt.xlabel('Ball as it\'s flying in x direction (meters)')  
     plt.ylabel("Ball as it\'s flying in z direction (meters)")
+    
+    xtemp=np.linspace(x,targetx,num=no_of_steps)
+    ytemp=np.linspace(y,targety,num=no_of_steps)
+    plt.subplot(212)
+    plt.plot(xtemp,ytemp,'r')
+    plt.scatter(xtemp,ytemp, s=337)
+    plt.ylabel("Ball as it\'s flying in z direction (meters)")
     plt.show()
 
-
 #test case
-x=-5; y=0; z=2; alpha=70
+x=-5; y=-10; z=2; alpha=70
 targetx=0;targety=0; targetz=8
 
 PlotPath2D(x,y,z,alpha,targetx,targety,targetz)
