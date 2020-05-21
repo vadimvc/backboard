@@ -51,11 +51,10 @@ def CalcBeta(x,y,targetx,targety):
     
 def CalculatePath(x,y,z,alpha,targetx,targety,targetz):
     #Calculate the initial velocity given the starting points and the end desired location
-    (Velocity_x, Velocity_y_final, Velocity_y_initial)=CalcInitialVelocity(x,z,targetx,targetz,alpha)
+    (Velocity_x, Velocity_y_final, Velocity_y_initial)=CalcInitialVelocity(x,z,targetx,targetz,alpha)    
     
-#    Velocity_y_final=Velocity_y_final-g*t
-#########TODO CALCULATE THE ACTUAL RIGHT AMOUNT OF TIME THIS TAKES AND THEN HAVE THAT BE THE UPPER BOUND 
-    t=np.linspace(0, 3, num=50)
+    endt=(targetx-x)/Velocity_x
+    t=np.linspace(0, endt, num=50)
 
     #Equations of motion
 
@@ -87,16 +86,19 @@ def PlotPath2D(x,y,z,alpha,targetx,targety,targetz):
     fig = plt.figure()
     plt.plot(x,z,'r')
     plt.title('Ball Trajectory' )  
-    plt.xlabel('Ball as it\'s flying in x direction (feet)')  
-    plt.ylabel("Ball as it\'s flying in y direction (feet)")
+    plt.xlabel('Ball as it\'s flying in x direction (meters)')  
+    plt.ylabel("Ball as it\'s flying in z direction (meters)")
     plt.show()
 
 
 #test case
-x=-5; y=0; z=2; alpha=60
+x=-5; y=0; z=2; alpha=70
 targetx=0;targety=0; targetz=8
 
 PlotPath2D(x,y,z,alpha,targetx,targety,targetz)
+
+#PlotPath3D(x,y,z,alpha,targetx,targety,targetz)
+
 
 
 #(x,y,z)=CalculatePath(x,y,z,alpha,targetx,targety,targetz)
