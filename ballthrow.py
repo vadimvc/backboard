@@ -2,13 +2,14 @@ import math
 import numpy as np
 from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
-
-
 import matplotlib.patches as patches
 import mpl_toolkits.mplot3d.art3d as art3d
+#from pyquaternion import Quaternion
 
 g=9.81 #m/s^2
-no_of_steps=12
+no_of_steps=15
+BackBoardHeight=.121
+BackBoardWidth=.1829
 
 def CalcInitialVelocity(x, z, targetx, targetz, alpha):
     #x y and z position the ball is being thrown from
@@ -56,7 +57,8 @@ def CalculatePath(x,y,z,alpha,targetx,targety,targetz):
     
     endt=(targetx-x)/Velocity_x
     t=np.linspace(0, endt, num=no_of_steps)
-
+    print('t is equal to ' + str(t))
+    print('Velocity is equal to ' + str(math.sqrt(Velocity_x**2+Velocity_y_initial**2)))
     #Equations of motion
 
     Z=z+Velocity_y_initial*t-0.5*g*t**2
@@ -87,24 +89,95 @@ def PlotPath2D(x,y,z,alpha,targetx,targety,targetz):
     fig = plt.figure(figsize=(8, 9))
     plt.subplot(211)
     plt.plot(xpath,zpath,'r')
-    plt.scatter(xpath, zpath, s=337)
+    plt.scatter(xpath, zpath, s=337, edgecolors= "black")
     plt.title('Ball Trajectory' )  
     plt.xlabel('Ball as it\'s flying in x direction (meters)')  
-    plt.ylabel("Ball as it\'s flying in z direction (meters)")
+    plt.ylabel("Ball as it\'s flying in y direction (meters)")
     
+    
+    #spaces the start and end points so I can do a scatter plot showing the ball
     xtemp=np.linspace(x,targetx,num=no_of_steps)
     ytemp=np.linspace(y,targety,num=no_of_steps)
+    
     plt.subplot(212)
     plt.plot(xtemp,ytemp,'r')
-    plt.scatter(xtemp,ytemp, s=337)
+    plt.scatter(xtemp,ytemp, s=337, edgecolors= "black")
+    plt.xlabel('Ball as it\'s flying in x direction (meters)') 
     plt.ylabel("Ball as it\'s flying in z direction (meters)")
     plt.show()
 
-#test case
-x=-5; y=-10; z=2; alpha=70
-targetx=0;targety=0; targetz=8
+def GenerateLines(targetz):
+    #intended to generate all the lines which the ball can bounce again
+    #alpha and beta represent the 2 angles, alpha is up/down and beta is left/right
+    
+    HalfHeight=BackBoardHeight/2
+    HalfWidth=BackBoardWidth/2
 
-PlotPath2D(x,y,z,alpha,targetx,targety,targetz)
+    alpha=0#Rotation about z axis (sideways)
+    beta=0#Rotation about y axis (up/down)
+    gamma=0#Rotation about x axis (useless) - keep this zero
+
+    alpha=math.radians(alpha)
+    beta=math.radians(beta)
+    gamma=math.radians(gamma)
+
+    #rotation matrix for euler angles
+    RotationMatrix=[[np.cos(alpha)*np.cos(beta), np.cos(alpha)*np.sin(beta)*np.sin(gamma)-np.sin(alpha)*np.cos(gamma), np.cos(alpha)*np.sin(beta)*np.cos(gamma)+np.sin(alpha)*np.sin(gamma)],
+                    [np.sin(alpha)*np.cos(beta), np.sin(alpha)*np.sin(beta)*np.sin(gamma)+np.cos(alpha)*np.cos(gamma), np.sin(alpha)*np.sin(beta)*np.cos(gamma)-np.cos(alpha)*np.sin(gamma)],
+                    [-1*np.sin(beta), np.cos(beta)*np.sin(gamma), np.cos(beta)*np.cos(gamma)]]
+    
+    #xyz for backboard positions pre rotation                
+    TR=[[0],
+        [HalfWidth],
+        [targetz+HalfHeight]]
+
+    TL=[[0],
+        [-HalfWidth],
+        [targetz+HalfHeight]]
+
+    BL=[[0],
+        [-HalfWidth],
+        [targetz-HalfHeight]]
+
+    BR=[[0],
+        [HalfWidth],
+        [targetz-HalfHeight]]
+
+    #matrix multiplication for transform
+    TR_Rotated=np.dot(RotationMatrix,TR)
+    TL_Rotated=np.dot(RotationMatrix,TL)
+    BL_Rotated=np.dot(RotationMatrix,BL)
+    BR_Rotated=np.dot(RotationMatrix,BR)
+
+    #defining lines
+    Line0=[[TR_Rotated[0],TL_Rotated[0]],[TR_Rotated[1],TL_Rotated[1]],[TR_Rotated[2],TL_Rotated[2]]]
+    Line1=[[TL_Rotated[0],BL_Rotated[0]],[TL_Rotated[1],BL_Rotated[1]],[TL_Rotated[2],BL_Rotated[2]]]
+    Line2=[[BL_Rotated[0],BR_Rotated[0]],[BL_Rotated[1],BR_Rotated[1]],[BL_Rotated[2],BR_Rotated[2]]]
+    Line3=[[BR_Rotated[0],TR_Rotated[0]],[BR_Rotated[1],TR_Rotated[1]],[BR_Rotated[2],TR_Rotated[2]]]
+
+    return Line0,Line1,Line2,Line3
+
+def PlotGeneratedLines(targetz):
+    (Line0,Line1,Line2,Line3)=GenerateLines(10)
+ 
+    ##TODO - MAKE THIS WORK AND MAKE SURE GENERATELINES IS ERROR FREE
+
+    # fig = plt.figure()
+    # ax = plt.axes(projection='3d')
+    # ax.plot3D([Line0[0][0],Line0[0][1]], [Line0[1][0],Line0[1][1]], [Line0[2][0],Line0[2][1]], 'red')
+    # plt.title('BasketballNet' )  
+    # ax.set_xlabel('X')  
+    # ax.set_ylabel('Y')
+    # ax.set_zlabel('Z')
+    # plt.show()
+
+#test case
+x=-10; y=-10; z=2; alpha=70
+targetx=0;targety=0; targetz=10
+
+PlotGeneratedLines(10)
+
+#PlotPath2D(x,y,z,alpha,targetx,targety,targetz)
 
 #PlotPath3D(x,y,z,alpha,targetx,targety,targetz)
 
