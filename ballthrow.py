@@ -8,8 +8,8 @@ import mpl_toolkits.mplot3d.art3d as art3d
 
 g=9.81 #m/s^2
 no_of_steps=15
-BackBoardHeight=.121
-BackBoardWidth=.1829
+BackBoardHeight=0.121
+BackBoardWidth=0.1829
 
 def CalcInitialVelocity(x, z, targetx, targetz, alpha):
     #x y and z position the ball is being thrown from
@@ -69,13 +69,23 @@ def CalculatePath(x,y,z,alpha,targetx,targety,targetz):
 
 def PlotPath3D(x,y,z,alpha,targetx,targety,targetz):
     (xpath,ypath,zpath)=CalculatePath(x,y,z,alpha,targetx,targety,targetz)
+    (Line0,Line1,Line2,Line3)=GenerateBackboard(targetz)
+  
     fig = plt.figure()
     ax = plt.axes(projection='3d')
-    ax.plot3D(xpath, ypath, zpath, 'red')
-#TODO MAKE THIS PATCH WORK CORRECTLY
-    # rect = patches.Rectangle((0,0),0.1,.18,linewidth=1,edgecolor='blue',facecolor='blue')
-    # ax.add_patch(rect)
-    # art3d.pathpatch_2d_to_3d(rect, z=0, zdir="z")
+    ax.plot3D(xpath, ypath, zpath, 'blue')
+
+    #bacbkoard generation code
+    ax.plot3D([Line0[0][0][0],Line0[0][1][0]], [Line0[1][0][0],Line0[1][1][0]], [Line0[2][0][0],Line0[2][1][0]], 'red')
+    ax.plot3D([Line1[0][0][0],Line1[0][1][0]], [Line1[1][0][0],Line1[1][1][0]], [Line1[2][0][0],Line1[2][1][0]], 'red')
+    ax.plot3D([Line2[0][0][0],Line2[0][1][0]], [Line2[1][0][0],Line2[1][1][0]], [Line2[2][0][0],Line2[2][1][0]], 'red')
+    ax.plot3D([Line3[0][0][0],Line3[0][1][0]], [Line3[1][0][0],Line3[1][1][0]], [Line3[2][0][0],Line3[2][1][0]], 'red')
+    # plt.title('BasketballNet' )  
+    # ax.set_xlabel('X')  
+    # ax.set_ylabel('Y')
+    # ax.set_zlabel('Z')
+    # plt.show()
+
 
     
     plt.title('Ball Trajectory' )  
@@ -106,15 +116,15 @@ def PlotPath2D(x,y,z,alpha,targetx,targety,targetz):
     plt.ylabel("Ball as it\'s flying in z direction (meters)")
     plt.show()
 
-def GenerateLines(targetz):
+def GenerateBackboard(targetz):
     #intended to generate all the lines which the ball can bounce again
     #alpha and beta represent the 2 angles, alpha is up/down and beta is left/right
     
     HalfHeight=BackBoardHeight/2
     HalfWidth=BackBoardWidth/2
 
-    alpha=0#Rotation about z axis (sideways)
-    beta=0#Rotation about y axis (up/down)
+    alpha=45#Rotation about z axis (sideways)
+    beta=45#Rotation about y axis (up/down)
     gamma=0#Rotation about x axis (useless) - keep this zero
 
     alpha=math.radians(alpha)
@@ -129,19 +139,19 @@ def GenerateLines(targetz):
     #xyz for backboard positions pre rotation                
     TR=[[0],
         [HalfWidth],
-        [targetz+HalfHeight]]
+        [HalfHeight]]
 
     TL=[[0],
         [-HalfWidth],
-        [targetz+HalfHeight]]
+        [HalfHeight]]
 
     BL=[[0],
         [-HalfWidth],
-        [targetz-HalfHeight]]
+        [HalfHeight]]
 
     BR=[[0],
         [HalfWidth],
-        [targetz-HalfHeight]]
+        [HalfHeight]]
 
     #matrix multiplication for transform
     TR_Rotated=np.dot(RotationMatrix,TR)
@@ -149,6 +159,12 @@ def GenerateLines(targetz):
     BL_Rotated=np.dot(RotationMatrix,BL)
     BR_Rotated=np.dot(RotationMatrix,BR)
 
+    #adding offset associated with height of hoop
+    # TR_Rotated[2]=TR_Rotated[2]+targetz
+    # TL_Rotated[2]=TL_Rotated[2]+targetz
+    # BL_Rotated[2]=BL_Rotated[2]+targetz
+    # BR_Rotated[2]=BR_Rotated[2]+targetz
+    
     #defining lines
     Line0=[[TR_Rotated[0],TL_Rotated[0]],[TR_Rotated[1],TL_Rotated[1]],[TR_Rotated[2],TL_Rotated[2]]]
     Line1=[[TL_Rotated[0],BL_Rotated[0]],[TL_Rotated[1],BL_Rotated[1]],[TL_Rotated[2],BL_Rotated[2]]]
@@ -157,26 +173,28 @@ def GenerateLines(targetz):
 
     return Line0,Line1,Line2,Line3
 
-def PlotGeneratedLines(targetz):
-    (Line0,Line1,Line2,Line3)=GenerateLines(10)
- 
-    ##TODO - MAKE THIS WORK AND MAKE SURE GENERATELINES IS ERROR FREE
+def PlotBackBoard(targetz):
+    (Line0,Line1,Line2,Line3)=GenerateBackboard(targetz)
 
-    # fig = plt.figure()
-    # ax = plt.axes(projection='3d')
-    # ax.plot3D([Line0[0][0],Line0[0][1]], [Line0[1][0],Line0[1][1]], [Line0[2][0],Line0[2][1]], 'red')
-    # plt.title('BasketballNet' )  
-    # ax.set_xlabel('X')  
-    # ax.set_ylabel('Y')
-    # ax.set_zlabel('Z')
-    # plt.show()
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    ax.plot3D([Line0[0][0][0],Line0[0][1][0]], [Line0[1][0][0],Line0[1][1][0]], [Line0[2][0][0],Line0[2][1][0]], 'red')
+    ax.plot3D([Line1[0][0][0],Line1[0][1][0]], [Line1[1][0][0],Line1[1][1][0]], [Line1[2][0][0],Line1[2][1][0]], 'red')
+    ax.plot3D([Line2[0][0][0],Line2[0][1][0]], [Line2[1][0][0],Line2[1][1][0]], [Line2[2][0][0],Line2[2][1][0]], 'red')
+    ax.plot3D([Line3[0][0][0],Line3[0][1][0]], [Line3[1][0][0],Line3[1][1][0]], [Line3[2][0][0],Line3[2][1][0]], 'red')
+    plt.title('BasketballNet' )  
+    ax.set_xlabel('X')  
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    plt.show()
 
 #test case
-x=-10; y=-10; z=2; alpha=70
+x=-10; y=0; z=2; alpha=50
 targetx=0;targety=0; targetz=10
 
-PlotGeneratedLines(10)
+#GenerateBackboard(targetz)
 
+PlotBackBoard(targetz)
 #PlotPath2D(x,y,z,alpha,targetx,targety,targetz)
 
 #PlotPath3D(x,y,z,alpha,targetx,targety,targetz)
