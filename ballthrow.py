@@ -56,8 +56,6 @@ def CalculatePath(x,y,z,alpha,targetx,targety,targetz):
     
     endt=(targetx-x)/Velocity_x
     t=np.linspace(0, endt, num=no_of_steps)
-    print('t is equal to ' + str(t))
-    print('Velocity is equal to ' + str(math.sqrt(Velocity_x**2+Velocity_y_initial**2)))
     #Equations of motion
 
     Z=z+Velocity_y_initial*t-0.5*g*t**2
@@ -66,14 +64,14 @@ def CalculatePath(x,y,z,alpha,targetx,targety,targetz):
 
     return X,Y,Z
 
-def PlotPath3D(x,y,z,alpha,targetx,targety,targetz):
+def PlotPath3D(x,y,z,alpha,targetx,targety,targetz,xrot,yrot):
     (xpath,ypath,zpath)=CalculatePath(x,y,z,alpha,targetx,targety,targetz)
-    (Line0,Line1,Line2,Line3)=GenerateLines(targetz) 
+    (Line0,Line1,Line2,Line3)=GenerateLines(xrot,yrot,targetz) 
     
     fig = plt.figure()
     ax = plt.axes(projection='3d')
-    ax.plot3D(xpath, ypath, zpath, 'blue')
-    ax.plot3D([Line0[0][0][0],Line0[0][1][0]], [Line0[1][0][0],Line0[1][1][0]], [Line0[2][0][0],Line0[2][1][0]], 'red')
+    ax.plot3D(xpath, ypath, zpath, 'blue', label='ball path')
+    ax.plot3D([Line0[0][0][0],Line0[0][1][0]], [Line0[1][0][0],Line0[1][1][0]], [Line0[2][0][0],Line0[2][1][0]], 'red', label='backboard')
     ax.plot3D([Line1[0][0][0],Line1[0][1][0]], [Line1[1][0][0],Line1[1][1][0]], [Line1[2][0][0],Line1[2][1][0]], 'red')
     ax.plot3D([Line2[0][0][0],Line2[0][1][0]], [Line2[1][0][0],Line2[1][1][0]], [Line2[2][0][0],Line2[2][1][0]], 'red')
     ax.plot3D([Line3[0][0][0],Line3[0][1][0]], [Line3[1][0][0],Line3[1][1][0]], [Line3[2][0][0],Line3[2][1][0]], 'red')    
@@ -81,6 +79,7 @@ def PlotPath3D(x,y,z,alpha,targetx,targety,targetz):
     ax.set_xlabel('Ball as it\'s flying in x direction')  
     ax.set_ylabel('Ball as it\'s flying in y direction')
     ax.set_zlabel('Ball as it\'s flying in z direction')
+    plt.legend()
     plt.show()
 
 def PlotPath2D(x,y,z,alpha,targetx,targety,targetz):
@@ -105,16 +104,20 @@ def PlotPath2D(x,y,z,alpha,targetx,targety,targetz):
     plt.ylabel("Ball as it\'s flying in z direction (meters)")
     plt.show()
 
-def GenerateLines(targetz):
+def GenerateLines(xrot,yrot,targetz):
     #intended to generate all the lines which the ball can bounce again
     #alpha and beta represent the 2 angles, alpha is up/down and beta is left/right
     
     HalfHeight=BackBoardHeight/2
     HalfWidth=BackBoardWidth/2
+   
+    #alpha is the rotation about z axis (sideways)
+    #beta is the rotation about y axis (up/down)
+    #gamma is the rotation about x axis (useless) - keep this zero
+    alpha=xrot
+    beta=yrot
+    gamma=0
 
-    alpha=0#Rotation about z axis (sideways)
-    beta=0#Rotation about y axis (up/down)
-    gamma=0#Rotation about x axis (useless) - keep this zero
 
     alpha=math.radians(alpha)
     beta=math.radians(beta)
@@ -163,8 +166,8 @@ def GenerateLines(targetz):
     #return for lines. They are in conveenitnt to plot order ([x1,x2],[y1,y2],[z1,z2])
     return Line0,Line1,Line2,Line3
 
-def PlotGeneratedLines(targetz):
-    (Line0,Line1,Line2,Line3)=GenerateLines(targetz)
+def PlotGeneratedLines(xrot,yrot,targetz):
+    (Line0,Line1,Line2,Line3)=GenerateLines(xrot,yrot,targetz)
  
     fig = plt.figure()
     ax = plt.axes(projection='3d')
@@ -178,16 +181,24 @@ def PlotGeneratedLines(targetz):
     ax.set_zlabel('Z')
     plt.show()
 
+def CalcAngles(x,y,z,alpha,targetx,targety,targetz):
+    (X,Y,Z)=CalculatePath(x,y,z,alpha,targetx,targety,targetz)
+
+    print(X[-1])
+    print(X[-2])
 
 #test case
-x=-3; y=-2; z=0; alpha=80
-targetx=0;targety=0; targetz=10
+x=-3; y=-2; z=0; alpha=60
+targetx=0;targety=0; targetz=3
+xrot=0; yrot=0
 
-#PlotGeneratedLines(10)
+#CalcAngles(x,y,z,alpha,targetx,targety,targetz)
+
+#PlotGeneratedLines(xrot,yrot,targetz)
 
 #PlotPath2D(x,y,z,alpha,targetx,targety,targetz)
 
-PlotPath3D(x,y,z,alpha,targetx,targety,targetz)
+PlotPath3D(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
 
 
 
