@@ -6,9 +6,11 @@ import matplotlib.patches as patches
 import mpl_toolkits.mplot3d.art3d as art3d
 
 g=9.81 #m/s^2
-no_of_steps=15
-BackBoardHeight=.121
-BackBoardWidth=.1829
+no_of_steps=1200
+BackBoardHeight=1.21
+BackBoardWidth=1.829
+
+
 
 def CalcInitialVelocity(x, z, targetx, targetz, alpha):
     #x y and z position the ball is being thrown from
@@ -16,7 +18,10 @@ def CalcInitialVelocity(x, z, targetx, targetz, alpha):
     # numbers are positive going down the field, z is up and y completes right hand rule
     #alpha is the angle relative to the ground from which you're throwing the ball
     #all values are in meters
-    
+   
+    ##TODO - NEED TO ADD XROT and YROT ARGUMENTS AND RECALCULATE TARGET LOCATIONS BASED ON ROTATION
+
+
     #changing to a coord system where the place you're shooting from is 0,0
     dx=abs(targetx-x)
     dz=abs(targetz-z)
@@ -46,13 +51,14 @@ def CalcBeta(x,y,targetx,targety):
     deltax=targety-y
     angle=math.atan2(deltay,deltax)
     beta=90-math.degrees(angle)
-    print(beta)
+    #print(beta)
     return beta
     #output is in degrees
     
 def CalculatePath(x,y,z,alpha,targetx,targety,targetz):
     #Calculate the initial velocity given the starting points and the end desired location
     (Velocity_x, Velocity_y_final, Velocity_y_initial)=CalcInitialVelocity(x,z,targetx,targetz,alpha)    
+   ##TODO - NEED TO ADD XROT and YROT ARGUMENTS AND RECALCULATE Y TARGET LOCATION BASED ON ROTATION
     
     endt=(targetx-x)/Velocity_x
     t=np.linspace(0, endt, num=no_of_steps)
@@ -80,13 +86,17 @@ def PlotPath3D(x,y,z,alpha,targetx,targety,targetz,xrot,yrot):
     ax.set_ylabel('Ball as it\'s flying in y direction')
     ax.set_zlabel('Ball as it\'s flying in z direction')
     plt.legend()
-    plt.show()
+    #plt.show()
+    
+    return ax
 
-def PlotPath2D(x,y,z,alpha,targetx,targety,targetz):
+def PlotPath2D(x,y,z,alpha,targetx,targety,targetz,xrot,yrot):
     (xpath,ypath,zpath)=CalculatePath(x,y,z,alpha,targetx,targety,targetz)
+
     fig = plt.figure(figsize=(8, 9))
     plt.subplot(211)
     plt.plot(xpath,zpath,'r')
+
     plt.scatter(xpath, zpath, s=337, edgecolors= "black")
     plt.title('Ball Trajectory' )  
     plt.xlabel('Ball as it\'s flying in x direction (meters)')  
@@ -181,26 +191,64 @@ def PlotGeneratedLines(xrot,yrot,targetz):
     ax.set_zlabel('Z')
     plt.show()
 
-def CalcAngles(x,y,z,alpha,targetx,targety,targetz):
+def CalcAngles(x,y,z,alpha,targetx,targety,targetz,xrot,yrot):
     (X,Y,Z)=CalculatePath(x,y,z,alpha,targetx,targety,targetz)
+    DeltaY=Z[-1]-Z[-2]
+    DeltaX=X[-1]-X[-2]
+    SagitalAngle=math.atan2(DeltaY,DeltaX)
+    SagitalAngle=math.degrees(SagitalAngle)
+    FrontalAngle=CalcBeta(x,y,targetx,targety)
+    
+    #redefines angle to be 90 deg off from where it currently is
+    yrot=yrot-90
+    xrot=xrot-90
+    
+    SagitalIncidentAngle=2*yrot-SagitalAngle-180
+    FrontalIncidentAngle=2*xrot-FrontalAngle-180
 
-    print(X[-1])
-    print(X[-2])
+    while SagitalIncidentAngle>360:
+        SagitalIncidentAngle=SagitalIncidentAngle-360
+    
+    while SagitalIncidentAngle<0:
+        SagitalIncidentAngle=SagitalIncidentAngle+360
+    
+    while FrontalIncidentAngle>360:
+        FrontalIncidentAngle=FrontalIncidentAngle-360
+
+    while FrontalIncidentAngle<0:
+        FrontalIncidentAngle=FrontalIncidentAngle+360
+
+    return SagitalIncidentAngle,FrontalIncidentAngle,X,Y,Z
+
+def DefinenewLine(x,y,z,alpha,targetx,targety,targetz,xrot,yrot):
+    (SagitalIncidentAngle,FrontalIncidentAngle,X,Y,Z)=CalcAngles(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
+    ax=PlotPath3D(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
+
+    Xpoint2=X[-1]+5*np.sin(math.degrees(SagitalIncidentAngle))
+    Ypoint2=Y[-1]+5*np.cos(math.degrees(FrontalIncidentAngle))
+    Zpoint2=Z[-1]+5*np.cos(math.degrees(SagitalIncidentAngle))
+
+    ax.plot3D([X[-1], Xpoint2], [Y[-1],Ypoint2] ,[Z[-1],Ypoint2])
+    plt.show()
+
 
 #test case
-x=-3; y=-2; z=0; alpha=60
+x=-3; y=-3; z=0; alpha=60
 targetx=0;targety=0; targetz=3
 xrot=0; yrot=0
 
-#CalcAngles(x,y,z,alpha,targetx,targety,targetz)
+#(a,b)=CalcAngles(x,y,z,alpha,targetx,targety,targetz)
 
 #PlotGeneratedLines(xrot,yrot,targetz)
 
+#PlotPath2D(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
+
+#PlotPath3D(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
+
+DefinenewLine(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
+
+#(a,b)=CalcAngles(x,y,z,alpha,targetx,targety,targetz)
 #PlotPath2D(x,y,z,alpha,targetx,targety,targetz)
-
-PlotPath3D(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
-
-
 
 #(x,y,z)=CalculatePath(x,y,z,alpha,targetx,targety,targetz)
 #print(x)
