@@ -6,7 +6,7 @@ import matplotlib.patches as patches
 import mpl_toolkits.mplot3d.art3d as art3d
 
 g=9.81 #m/s^2
-no_of_steps=1200
+no_of_steps=2500
 BackBoardHeight=1.21
 BackBoardWidth=1.829
 
@@ -51,6 +51,7 @@ def CalcBeta(x,y,targetx,targety):
     deltax=targety-y
     angle=math.atan2(deltay,deltax)
     beta=90-math.degrees(angle)
+    beta=beta*-1
     #print(beta)
     return beta
     #output is in degrees
@@ -85,7 +86,7 @@ def PlotPath3D(x,y,z,alpha,targetx,targety,targetz,xrot,yrot):
     ax.set_xlabel('Ball as it\'s flying in x direction')  
     ax.set_ylabel('Ball as it\'s flying in y direction')
     ax.set_zlabel('Ball as it\'s flying in z direction')
-    plt.legend()
+ #   plt.legend()
     #plt.show()
     
     return ax
@@ -100,7 +101,7 @@ def PlotPath2D(x,y,z,alpha,targetx,targety,targetz,xrot,yrot):
     plt.scatter(xpath, zpath, s=337, edgecolors= "black")
     plt.title('Ball Trajectory' )  
     plt.xlabel('Ball as it\'s flying in x direction (meters)')  
-    plt.ylabel("Ball as it\'s flying in y direction (meters)")
+    plt.ylabel("Ball as it\'s flying in z direction (meters)")
     
     
     #spaces the start and end points so I can do a scatter plot showing the ball
@@ -111,8 +112,8 @@ def PlotPath2D(x,y,z,alpha,targetx,targety,targetz,xrot,yrot):
     plt.plot(xtemp,ytemp,'r')
     plt.scatter(xtemp,ytemp, s=337, edgecolors= "black")
     plt.xlabel('Ball as it\'s flying in x direction (meters)') 
-    plt.ylabel("Ball as it\'s flying in z direction (meters)")
-    plt.show()
+    plt.ylabel("Ball as it\'s flying in y direction (meters)")
+    #plt.show()
 
 def GenerateLines(xrot,yrot,targetz):
     #intended to generate all the lines which the ball can bounce again
@@ -195,14 +196,18 @@ def CalcAngles(x,y,z,alpha,targetx,targety,targetz,xrot,yrot):
     (X,Y,Z)=CalculatePath(x,y,z,alpha,targetx,targety,targetz)
     DeltaY=Z[-1]-Z[-2]
     DeltaX=X[-1]-X[-2]
+
     SagitalAngle=math.atan2(DeltaY,DeltaX)
     SagitalAngle=math.degrees(SagitalAngle)
+    if yrot==0:
+        SagitalAngle+=180
     FrontalAngle=CalcBeta(x,y,targetx,targety)
-    
+
     #redefines angle to be 90 deg off from where it currently is
     yrot=yrot-90
     xrot=xrot-90
     
+
     SagitalIncidentAngle=2*yrot-SagitalAngle-180
     FrontalIncidentAngle=2*xrot-FrontalAngle-180
 
@@ -220,22 +225,45 @@ def CalcAngles(x,y,z,alpha,targetx,targety,targetz,xrot,yrot):
 
     return SagitalIncidentAngle,FrontalIncidentAngle,X,Y,Z
 
-def DefinenewLine(x,y,z,alpha,targetx,targety,targetz,xrot,yrot):
+def TwoDPlotWithBounceTest(x,y,z,alpha,targetx,targety,targetz,xrot,yrot):
+    (SagitalIncidentAngle,FrontalIncidentAngle,X,Y,Z)=CalcAngles(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
+    ax=PlotPath2D(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
+
+    L=10 #length of line
+
+    Xpoint2=X[-1]+L*np.cos(math.radians(SagitalIncidentAngle))
+    Ypoint2=Y[-1]+L*np.cos(math.radians(FrontalIncidentAngle))
+    Zpoint2=Z[-1]+L*np.sin(math.radians(SagitalIncidentAngle))
+
+
+    plt.subplot(211)
+    plt.plot([X[-1], Xpoint2], [Z[-1],Zpoint2],c='g')
+    plt.subplot(212)
+    plt.plot([X[-1], Xpoint2], [Y[-1],Ypoint2],c='g')
+    plt.show()
+
+def ThreeDPlotWithBounceTest(x,y,z,alpha,targetx,targety,targetz,xrot,yrot):
     (SagitalIncidentAngle,FrontalIncidentAngle,X,Y,Z)=CalcAngles(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
     ax=PlotPath3D(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
 
-    Xpoint2=X[-1]+5*np.sin(math.degrees(SagitalIncidentAngle))
-    Ypoint2=Y[-1]+5*np.cos(math.degrees(FrontalIncidentAngle))
-    Zpoint2=Z[-1]+5*np.cos(math.degrees(SagitalIncidentAngle))
+    L=5 #length of line
 
-    ax.plot3D([X[-1], Xpoint2], [Y[-1],Ypoint2] ,[Z[-1],Ypoint2])
+    Xpoint2=X[-1]+L*np.cos(math.radians(SagitalIncidentAngle))
+    Ypoint2=(Y[-1]+L*np.cos(math.radians(FrontalIncidentAngle)))
+    Zpoint2=Z[-1]+L*np.sin(math.radians(SagitalIncidentAngle))
+
+    plt.gca()
+    plt.gcf()
+    ax.plot3D([X[-1],Xpoint2], [Y[-1],Ypoint2], [Z[-1],Zpoint2], 'green', label='return path')
+    plt.legend()
     plt.show()
 
-
 #test case
-x=-3; y=-3; z=0; alpha=60
+x=-4; y=-4; z=0; alpha=60
 targetx=0;targety=0; targetz=3
-xrot=0; yrot=0
+xrot=45; yrot=-45
+
+#CalcAngles(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
 
 #(a,b)=CalcAngles(x,y,z,alpha,targetx,targety,targetz)
 
@@ -245,7 +273,10 @@ xrot=0; yrot=0
 
 #PlotPath3D(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
 
-DefinenewLine(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
+#TwoDPlotWithBounceTest(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
+
+ThreeDPlotWithBounceTest(x,y,z,alpha,targetx,targety,targetz,xrot,yrot)
+
 
 #(a,b)=CalcAngles(x,y,z,alpha,targetx,targety,targetz)
 #PlotPath2D(x,y,z,alpha,targetx,targety,targetz)
